@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 class MethodsProvider extends ChangeNotifier {
   bool loadingDialog = false;
+  String appVersion = '1.0.0';
 
   void showLoadingDialog(BuildContext context) async {
     loadingDialog = true;

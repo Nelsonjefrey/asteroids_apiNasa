@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "28670262083",
+    "project_id": "asteroisd-70a61",
+    "storage_bucket": "asteroisd-70a61.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:28670262083:android:6fdef1b07d06c528680df6",
+        "android_client_info": {
+          "package_name": "com.example.asteroids_nasa"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "28670262083-5os26oics41s1s5f0nkmnr7u3pql6umh.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.asteroids_nasa",
+            "certificate_hash": "9a449931b5ad7bc3122b2e107b7b496d4379c2a9"
+          }
+        },
+        {
+          "client_id": "28670262083-cg5og78ko6n6da3pisi3fk0di5e2duh9.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBoRy-_QjQ6hwc6zxsiip9vsI4i7i9Dd7s"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "28670262083-8sf4klja5gb6b9t09m1b7hbe1cnpv5ka.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

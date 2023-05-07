@@ -4,6 +4,7 @@ import 'package:asteroids_nasa/presentation/providers/firebase_provider.dart';
 import 'package:asteroids_nasa/presentation/providers/methods_provider.dart';
 import 'package:asteroids_nasa/presentation/screens/home/home.dart';
 import 'package:asteroids_nasa/presentation/screens/sing_in/email_sign_in.dart';
+import 'package:asteroids_nasa/presentation/screens/sing_in/otp_verification.dart';
 import 'package:asteroids_nasa/presentation/screens/sing_in/register.dart';
 import 'package:asteroids_nasa/presentation/screens/sing_in/widgets/footer.dart';
 import 'package:asteroids_nasa/presentation/widgets/go_back_button.dart';
@@ -212,10 +213,7 @@ class _AuthenticationState extends State<Authentication> {
                                     )),
                                 GestureDetector(
                                   onTap: () {
-                                    validatePhoneFields();
-                                    // Navigator.pushNamed(
-                                    //     context, OtpVerification.routeName,
-                                    //     arguments: '+57' + phoneController.text);
+                                    validatePhoneFields();                                   
                                   },
                                   child: Hero(
                                     tag: 'continueButton',

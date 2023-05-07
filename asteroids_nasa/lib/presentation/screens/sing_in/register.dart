@@ -42,7 +42,6 @@ class _RegisterState extends State<Register> {
 
   bool showPassword = false;
   bool showPassword2 = false;
-  bool terms = false;
 
   String? emailResult;
   String? phoneResult;
@@ -109,12 +108,6 @@ class _RegisterState extends State<Register> {
             title: 'Espera',
             message: 'Número de celular invalido');
         phoneFocus.requestFocus();
-        // } else if (emgPhoneController.text.isEmpty) {
-        //   utils.showFlushbar(
-        //       context: context,
-        //       title: utils.localeTexts!['register_flushbar5_title'],
-        //       message: utils.localeTexts!['register_flushbar5_text']);
-        //   emgPhoneFocus.requestFocus();
       } else if (emgPhoneController.text.isNotEmpty &&
           emgPhoneController.text.length != 10) {
         utils.showFlushbar(
@@ -173,90 +166,78 @@ class _RegisterState extends State<Register> {
               message: 'El correo ya se encuentra registrado');
 
           emailFocus.requestFocus();
-        } else if (arguments['type'] != 'phone' &&
-            firebaseProvider.tempDriverInfo == null &&
-            await firebaseProvider
-                .verifyRepeatedPhone('+57 $phoneController.text')) {
-          methodsProvider.hideLoadingDialog(context);
-          utils.showFlushbar(
-              context: context,
-              title: 'Espera',
-              message: 'El número de celular ya se encuentra registrado');
-          emailFocus.requestFocus();
         } else {
           Map<String, dynamic> userData = {
-            'notification_id': '',
             'creation_date': DateTime.now(),
             'profile_info': {
               'names': namesController.text,
               'last_names': lastNamesController.text,
-              'phone': '+57 $phoneController.text',
+              'phone': '+57 ${phoneController.text}',
               'emg_phone': emgPhoneController.text,
               'email': emailController.text,
               'photo_url': ''
             },
-            'save_addresses': [],
-            'agreement': {},
-            'wallet': 0.0,
-            'user_fmasivo': false,
             'enable': true
           };
           if (firebaseProvider.tempDriverInfo != null) {
-            // String result =
-            //     await firebaseProvider.registerUserWithoutAuth(userData);
-            // if (result == 'success') {
-            //   methodsProvider.hideLoadingDialog(context);
-            //   if (await firebaseProvider.validateFirstTime()) {                
-            //   } else {
-            //     firebaseProvider.currentRoute = "home";
-            //     Navigator.of(context).pushReplacementNamed(Home.routeName);
-            //   }
-            // } else {
-            //   methodsProvider.hideLoadingDialog(context);
-            //   utils.showFlushbar(
-            //       context: context,
-            //       title: utils.localeTexts!['register_flushbar15_title'],
-            //       message: utils.localeTexts!['register_flushbar15_text']);
-            // }
+            String result =
+                await firebaseProvider.registerUserWithoutAuth(userData);
+            if (result == 'success') {
+              methodsProvider.hideLoadingDialog(context);
+              if (await firebaseProvider.validateFirstTime()) {
+              } else {
+                firebaseProvider.currentRoute = "home";
+                Navigator.of(context).pushReplacementNamed(Home.routeName);
+              }
+            } else {
+              methodsProvider.hideLoadingDialog(context);
+              utils.showFlushbar(
+                  context: context,
+                  title: 'Error',
+                  message:
+                      'No se pudo realizar el registro. Intenta nuevamente');
+            }
           } else if (arguments['type'] == 'email') {
-            // String result = await firebaseProvider.emailRegister(
-            //   context,
-            //   emailController.text,
-            //   passwordController.text,
-            //   userData,
-            // );
-            // if (result == 'success') {
-            //   methodsProvider.hideLoadingDialog(context);
-            //   firebaseProvider.sendCodeVerification(
-            //     context,
-            //     methodsProvider,
-            //     phoneController.text,
-            //     'register',
-            //   );
-            // } else if (result == 'error') {
-            //   methodsProvider.hideLoadingDialog(context);
-            //   utils.showFlushbar(
-            //       context: context,
-            //       title: utils.localeTexts!['register_flushbar16_title'],
-            //       message: utils.localeTexts!['register_flushbar16_text']);
-            // }
+            String result = await firebaseProvider.emailRegister(
+              context,
+              emailController.text,
+              passwordController.text,
+              userData,
+            );
+            if (result == 'success') {
+              methodsProvider.hideLoadingDialog(context);
+              firebaseProvider.sendCodeVerification(
+                context,
+                methodsProvider,
+                phoneController.text,
+                'register',
+              );
+            } else if (result == 'error') {
+              methodsProvider.hideLoadingDialog(context);
+              utils.showFlushbar(
+                  context: context,
+                  title: 'Error',
+                  message:
+                      'No se pudo realizar el registro. Intenta nuevamente');
+            }
           } else {
             if (arguments['type'] == 'phone') {
-              // firebaseProvider.linkEmail(
-              //     emailController.text, passwordController.text);
+              firebaseProvider.linkEmail(
+                  emailController.text, passwordController.text);
             }
-            // String result = await firebaseProvider.updateUserData(userData);
-            // if (result == 'success') {
-            //   methodsProvider.hideLoadingDialog(context);
-            //   firebaseProvider.currentRoute = "home";
-            //   Navigator.of(context).pushReplacementNamed(Home.routeName);
-            // } else {
-            //   methodsProvider.hideLoadingDialog(context);
-            //   utils.showFlushbar(
-            //       context: context,
-            //       title: utils.localeTexts!['register_flushbar17_title'],
-            //       message: utils.localeTexts!['register_flushbar17_text']);
-            // }
+            String result = await firebaseProvider.updateUserData(userData);
+            if (result == 'success') {
+              methodsProvider.hideLoadingDialog(context);
+              firebaseProvider.currentRoute = "home";
+              Navigator.of(context).pushReplacementNamed(Home.routeName);
+            } else {
+              methodsProvider.hideLoadingDialog(context);
+              utils.showFlushbar(
+                  context: context,
+                  title: 'Error',
+                  message:
+                      'No se pudo realizar el registro. Intenta nuevamente');
+            }
           }
         }
       }
@@ -329,10 +310,9 @@ class _RegisterState extends State<Register> {
     } else {
       setState(() {
         emailResult = 'Verificando';
-      });      
+      });
     }
   }
-  
 
   @override
   Widget build(BuildContext context) {
@@ -360,18 +340,6 @@ class _RegisterState extends State<Register> {
             alignment: Alignment.center,
             child: Stack(
               children: [
-                Positioned(
-                    left: -utils.screenWidth * 0.19,
-                    top: utils.absoluteHeight * 0.05,
-                    child: Hero(
-                      tag: 'background',
-                      child: SizedBox(
-                        width: utils.screenWidth * 0.8,
-                        height: utils.absoluteHeight * 0.4,
-                        child: Image.asset('assets/logos/container.png',
-                            fit: BoxFit.fill, color: utils.primaryColor),
-                      ),
-                    )),
                 // Header
                 const Positioned(
                   top: 0,
@@ -596,7 +564,7 @@ class _RegisterState extends State<Register> {
                                           : const SizedBox(),
                                 ),
                               ),
-                            ),                            
+                            ),
                             // Email field
                             Container(
                               margin: EdgeInsets.only(
@@ -619,7 +587,6 @@ class _RegisterState extends State<Register> {
                                     : false,
                                 onEditingComplete: () {
                                   emailFocus.nextFocus();
-                                  setState(() {});
                                 },
                                 onChanged: (val) {
                                   validateEmail();
@@ -657,8 +624,7 @@ class _RegisterState extends State<Register> {
                                               ),
                                             )
                                       : (emailController.text.isNotEmpty)
-                                          ? Icon(Icons.check,
-                                              color: utils.secundaryColor)
+                                          ? const Icon(Icons.check)
                                           : const SizedBox(),
                                 ),
                               ),
@@ -799,8 +765,7 @@ class _RegisterState extends State<Register> {
                                   decoration: BoxDecoration(
                                       color: utils.secundaryColor,
                                       borderRadius: BorderRadius.circular(10)),
-                                  child: Text(
-                                      'Continuar',
+                                  child: Text('Continuar',
                                       style: TextStyle(
                                           color: Colors.white,
                                           fontSize: utils.screenWidth * 0.043,

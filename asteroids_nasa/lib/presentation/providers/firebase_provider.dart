@@ -1,5 +1,9 @@
+// ignore_for_file: use_build_context_synchronously
+
+import 'package:asteroids_nasa/models/user.dart';
 import 'package:asteroids_nasa/presentation/providers/methods_provider.dart';
 import 'package:asteroids_nasa/presentation/screens/home/home.dart';
+import 'package:asteroids_nasa/presentation/screens/sing_in/otp_verification.dart';
 import 'package:asteroids_nasa/presentation/screens/sing_in/register.dart';
 import 'package:asteroids_nasa/presentation/screens/sing_in/welcome.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -17,7 +21,8 @@ class FirebaseProvider extends ChangeNotifier {
   late FirebaseAuth auth;
   late FirebaseFirestore db;
   late SharedPreferences shared;
-    
+  late AppUser? user;
+
   bool codeSent = false;
   String? verificationId;
   String currentRoute = "";
@@ -43,7 +48,10 @@ class FirebaseProvider extends ChangeNotifier {
     String phoneNumber,
     String from,
   ) async {
+    
     try {
+      print(phoneNumber);
+      print(from);
       methods.showLoadingDialog(context);
       await auth.verifyPhoneNumber(
         timeout: const Duration(seconds: 60),
@@ -65,8 +73,8 @@ class FirebaseProvider extends ChangeNotifier {
           if (result == 'userData') {
             methods.hideLoadingDialog(context);
             currentRoute = "home";
-            // validatedEstadoUsuario(context);
-            // Navigator.of(context).pushReplacementNamed(Home.routeName);
+            validatedEstadoUsuario(context);
+            Navigator.of(context).pushReplacementNamed(Home.routeName);
           } else if (result == 'driverData' || result == 'noData') {
             methods.hideLoadingDialog(context);
             currentRoute = "register";
@@ -99,7 +107,7 @@ class FirebaseProvider extends ChangeNotifier {
           notifyListeners();
           if (methods.loadingDialog) {
             methods.hideLoadingDialog(context);
-          }          
+          }
           debugPrint('VERIFICATION FAILED');
           // print(e);
           utils.showFlushbar(
@@ -113,9 +121,17 @@ class FirebaseProvider extends ChangeNotifier {
             methods.hideLoadingDialog(context);
           }
           codeSent = true;
-          this.verificationId = verificationId;          
+          this.verificationId = verificationId;
+          // result = 'codeSent';
           notifyListeners();
-          currentRoute = "otp-verification";          
+          currentRoute = "otp-verification";
+          Navigator.of(context).pushNamed(
+            OtpVerification.routeName,
+            arguments: {
+              'phone': phoneNumber,
+              'from': from,
+            },
+          );
         },
         codeAutoRetrievalTimeout: (String retrival) {
           if (codeSent) {
@@ -123,7 +139,7 @@ class FirebaseProvider extends ChangeNotifier {
               methods.hideLoadingDialog(context);
             }
             codeSent = false;
-            verificationId = null;            
+            verificationId = null;
             notifyListeners();
             debugPrint('VERIFICATION TIMEOUT');
             if (currentRoute == "otp-verification") {
@@ -146,7 +162,6 @@ class FirebaseProvider extends ChangeNotifier {
           message: 'Intenta nuevamente');
     }
   }
-
 
   // Future<String> phoneSignIn(
   //     BuildContext context, PhoneAuthCredential credential) async {
@@ -235,6 +250,7 @@ class FirebaseProvider extends ChangeNotifier {
       return false;
     }
   }
+
   Future<bool> verifyRepeatedPhone(String phone) async {
     try {
       Uri url = Uri.parse(
@@ -248,6 +264,107 @@ class FirebaseProvider extends ChangeNotifier {
     } catch (e) {
       debugPrint('ERROR verifyRepeatedEmail');
       return false;
+    }
+  }
+
+  // Verify if sent code is correct
+  Future<String> verifySentCode(BuildContext context, String verificationId,
+      String code, String phoneNumber, String type) async {
+    try {
+      PhoneAuthCredential credential = PhoneAuthProvider.credential(
+          verificationId: verificationId, smsCode: code);
+      String result;
+      if (type == 'auth') {
+        result = await phoneSignIn(context, credential);
+      } else {
+        result = await linkPhoneNumber(credential);
+      }
+      return result;
+    } catch (e) {
+      debugPrint('ERROR verifySentCode: $e');
+      return 'error';
+    }
+  }
+
+  Future<String> emailRegister(BuildContext context, String email,
+      String password, Map<String, dynamic> userData) async {
+    try {
+      UserCredential userCred = await auth.createUserWithEmailAndPassword(
+          email: email, password: password);
+      await auth.signInWithEmailAndPassword(email: email, password: password);
+      if (userCred.user != null) {
+        await db.collection('users').doc(userCred.user!.uid).set(userData);
+        user = AppUser(
+          uid: userCred.user!.uid,
+          profileInfo: userData['profile_info'],
+          enable: userData['enable'],
+        );
+        return 'success';
+      } else {
+        return 'error';
+      }
+    } catch (e) {
+      debugPrint('ERROR emailAuthentication: $e');
+      return 'error';
+    }
+  }
+
+  Future<bool> validateFirstTime() async {
+    try {
+      bool? firsTime = shared.getBool("first_time");
+      if (firsTime == null) {
+        shared.setBool('first_time', false);
+        return true;
+      } else {
+        return false;
+      }
+    } catch (e) {
+      debugPrint("FirebaseProvider, validateFirstTime error: $e");
+      return true;
+    }
+  }
+
+  // Update user data from db
+  Future<String> updateUserData(Map<String, dynamic> userData) async {
+    try {
+      await db.collection('users').doc(auxUid).set(userData);
+      user = AppUser(
+          uid: auxUid!,
+          profileInfo: userData['profile_info'],
+          enable: userData['enable']);
+      auxUid = null;
+      return 'success';
+    } catch (e) {
+      debugPrint('ERROR updateUserData: $e');
+      return 'error';
+    }
+  }
+
+  Future<String> linkEmail(String email, String password) async {
+    try {
+      AuthCredential emailAuthCredential =
+          EmailAuthProvider.credential(email: email, password: password);
+      await auth.currentUser!.reload();
+      await auth.currentUser!.linkWithCredential(emailAuthCredential);
+      return 'linked';
+    } catch (e) {
+      debugPrint('ERROR linkEmail: $e');
+      return 'linkedError';
+    }
+  }
+
+  Future<String> registerUserWithoutAuth(Map<String, dynamic> userData) async {
+    try {
+      await db.collection('users').doc(tempDriverInfo!['uid']).set(userData);
+      user = AppUser(
+        uid: tempDriverInfo!['uid'],
+        profileInfo: userData['profile_info'],
+        enable: userData['enable'],
+      );
+      return 'success';
+    } catch (e) {
+      debugPrint('ERROR registerUserWithoutAuth: $e');
+      return 'error';
     }
   }
 
@@ -310,7 +427,7 @@ class FirebaseProvider extends ChangeNotifier {
       return 'error';
     }
   }
-  
+
   Future<Map<String, dynamic>> googleSignIn() async {
     Map<String, dynamic> result = {};
     try {
@@ -324,14 +441,15 @@ class FirebaseProvider extends ChangeNotifier {
             accessToken: googleSignInAuthentication.accessToken,
             idToken: googleSignInAuthentication.idToken,
           );
-          UserCredential userCred = await auth.signInWithCredential(authCredential);
+          UserCredential userCred =
+              await auth.signInWithCredential(authCredential);
           if (userCred.user != null && userCred.user!.email != null) {
-            if (!await verifyRepeatedEmail(userCred.user!.email!)) {              
+            if (!await verifyRepeatedEmail(userCred.user!.email!)) {
               DocumentSnapshot documentSnapshot =
                   await db.collection('users').doc(userCred.user!.uid).get();
               Map<String, dynamic>? userData =
                   documentSnapshot.data() as Map<String, dynamic>?;
-              if (userData != null) {                
+              if (userData != null) {
                 return {'error': '', 'data': true};
               } else {
                 auxUid = userCred.user!.uid;
@@ -367,8 +485,59 @@ class FirebaseProvider extends ChangeNotifier {
       return result;
     }
   }
-  
-  phoneSignIn(BuildContext context, PhoneAuthCredential credential) {
+
+  phoneSignIn(BuildContext context, PhoneAuthCredential credential) async {
+    try {
+      UserCredential userCred = await auth.signInWithCredential(credential);
+      DocumentSnapshot documentSnapshot =
+          await db.collection('users').doc(userCred.user!.uid).get();
+      Map<String, dynamic>? userData =
+          documentSnapshot.data() as Map<String, dynamic>?;
+      codeSent = false;
+      verificationId = null;
+      auxUid = userCred.user!.uid;
+      notifyListeners();
+      if (userData != null) {
+        user = AppUser(
+            uid: userCred.user!.uid,            
+            profileInfo: userData['profile_info'],
+            enable: userData['enable']);        
+        return 'userData';
+      } else {
+        DocumentSnapshot driverSnapshot =
+            await db.collection('drivers').doc(userCred.user!.uid).get();
+        Map<String, dynamic>? driverData =
+            driverSnapshot.data() as Map<String, dynamic>?;
+        if (driverData != null) {
+          tempDriverInfo = {
+            'uid': userCred.user!.uid,
+            'name': driverData['profile_info']['names'],
+            'lastNames': driverData['profile_info']['last_names'],
+            'email': driverData['profile_info']['email'],
+            'phone': driverData['profile_info']['phone'],
+            'emgPhone': driverData['profile_info']['emg_phone1'],
+          };
+          return 'driverData';
+        } else {
+          if (auth.currentUser!.email != null) {
+            tempDriverInfo = {
+              'uid': userCred.user!.uid,
+              'name': '',
+              'lastNames': '',
+              'email': auth.currentUser!.email,
+              'phone': auth.currentUser!.phoneNumber,
+              'emgPhone': '',
+            };
+            return 'driverData';
+          } else {
+            return 'noData';
+          }
+        }
+      }
+    } catch (e) {
+      debugPrint('ERROR phoneSignin: $e');
+      return 'error';
+    }
   }
 
   // validar estado usuario al realizar autenticacion-logueo
@@ -385,6 +554,7 @@ class FirebaseProvider extends ChangeNotifier {
       debugPrint('ERROR getGeneralInfo: $e');
     }
   }
+
   // Send an email to recover the password
   Future<String> sendRecoverPasswordEmail(String email) async {
     try {
@@ -400,7 +570,7 @@ class FirebaseProvider extends ChangeNotifier {
     }
   }
 
-   //Dialog verificacion de cuenta inactiva
+  //Dialog verificacion de cuenta inactiva
   Future<void> _showMyDialog(BuildContext context) async {
     return showDialog(
       context: context,
@@ -449,18 +619,23 @@ class FirebaseProvider extends ChangeNotifier {
   Future<bool> updateEstadoUsuario(bool estado) async {
     bool estadoRetornado = false;
     try {
-      contador = 0;          
-      await db.collection('users').doc('').update({'enable': estado});      
-      notifyListeners();      
+      contador = 0;
+      await db.collection('users').doc('').update({'enable': estado});
+      notifyListeners();
     } catch (e) {
       debugPrint('ERROR al cambiar estado usuario: $e');
     }
     return estadoRetornado;
   }
 
-
+  // Log out user session
+  Future<String> logOut() async {
+    try {      
+      await auth.signOut();      
+      return 'success';
+    } catch (e) {
+      debugPrint('ERROR logOut: $e');
+      return 'error';
+    }
+  }
 }
-
-  
-
-
