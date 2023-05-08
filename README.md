@@ -10,7 +10,7 @@
 </table>
 
 ## 📜 Resumen 📜
-Aplicacion movíl Desarrollada en Flutter, Dart consume la api de la nasa el enpoint (Asteroids - NeoWs) y tiene integrado la authenticacion de firebase para la gestion y el manejo de los usuarios.
+Aplicacion movíl Desarrollada en Flutter, Dart consume la api de la nasa el endpoint (Asteroids - NeoWs) y tiene integrado la authenticacion de firebase para la gestion y el manejo de los usuarios.
 
 ## 👨‍💻 Tecnologías usadas 👨‍💻
 
