@@ -28,7 +28,7 @@ class MethodsProvider extends ChangeNotifier {
             ),
           );
         });
-  }
+  }  
 
   void hideLoadingDialog(BuildContext context) {
     loadingDialog = false;

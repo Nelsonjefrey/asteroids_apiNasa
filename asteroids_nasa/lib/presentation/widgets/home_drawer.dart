@@ -2,6 +2,7 @@
 
 import 'package:asteroids_nasa/presentation/providers/firebase_provider.dart';
 import 'package:asteroids_nasa/presentation/providers/methods_provider.dart';
+import 'package:asteroids_nasa/presentation/screens/profile/profile_info.dart';
 import 'package:asteroids_nasa/presentation/screens/sing_in/welcome.dart';
 import 'package:asteroids_nasa/utils/utils.dart';
 import 'package:flutter/material.dart';
@@ -41,7 +42,7 @@ class _HomeDrawerState extends State<HomeDrawer> {
     if (result == 'success') {
       Navigator.of(context).pop();
       firebaseProvider.currentRoute = "welcome";
-      Navigator.of(widget.homeContext).pushReplacementNamed(Welcome.routeName);
+      Navigator.of(context).pushReplacementNamed(Welcome.routeName);
       firebaseProvider.user = null;
     } else if (result == 'error') {
       methodsProvider.hideLoadingDialog(context);
@@ -155,7 +156,7 @@ class _HomeDrawerState extends State<HomeDrawer> {
                 // Profile info
                 GestureDetector(
                   onTap: () {
-                    // Navigator.pushNamed(context, ProfileInfo.routeName);
+                    Navigator.pushNamed(context, ProfileInfo.routeName);
                   },
                   child: Container(
                     width: double.infinity,
@@ -217,17 +218,12 @@ class _HomeDrawerState extends State<HomeDrawer> {
                       ],
                     ),
                   ),
-                ),
-                
-                //eliminar cuenta
-                SizedBox(height: utils.screenWidth * 0.05),
-                const Divider(
-                  height: 20,
-                  thickness: 0.2,
-                  color: Colors.black,
-                  // indent: 10,
-                  endIndent: 20,
-                ),
+                ),                                                                
+              ],
+            ),
+            Column(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [
                 // Sign out
                 GestureDetector(
                   onTap: () {
@@ -251,71 +247,6 @@ class _HomeDrawerState extends State<HomeDrawer> {
                             'Cerrar sesión',
                             style: TextStyle(
                                 fontSize: utils.screenWidth * 0.043,
-                                fontFamily: 'Quicksand',
-                                fontWeight: FontWeight.w500),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-                GestureDetector(
-                  onTap: () {
-                    _showMyDialog();
-                  },
-                  child: Container(
-                    margin: EdgeInsets.only(top: utils.absoluteHeight * 0.02),
-                    padding: EdgeInsets.symmetric(
-                        horizontal: utils.screenWidth * 0.05),
-                    child: Row(
-                      children: [
-                        Icon(
-                          Icons.delete_forever_outlined,
-                          size: utils.screenWidth * 0.06,
-                          color: utils.primaryColor,
-                        ),
-                        Container(
-                          padding: EdgeInsets.symmetric(
-                            horizontal: utils.screenWidth * 0.03,
-                          ),
-                          child: Text(
-                            'Eliminar cuenta',
-                            style: TextStyle(
-                                fontSize: utils.screenWidth * 0.043,
-                                fontFamily: 'Quicksand',
-                                fontWeight: FontWeight.w500),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ],
-            ),
-            Column(
-              mainAxisAlignment: MainAxisAlignment.end,
-              children: [
-                GestureDetector(
-                  onTap: () {                    
-                  },
-                  child: Container(
-                    padding: EdgeInsets.symmetric(
-                        horizontal: utils.screenWidth * 0.05),
-                    child: Row(
-                      children: [
-                        Icon(
-                          Icons.download,
-                          size: utils.screenWidth * 0.045,
-                          color: utils.secundaryColor,
-                        ),
-                        Container(
-                          padding: EdgeInsets.symmetric(
-                            horizontal: utils.screenWidth * 0.02,
-                          ),
-                          child: Text(
-                            'Ver política de datos',
-                            style: TextStyle(
-                                fontSize: utils.screenWidth * 0.038,
                                 fontFamily: 'Quicksand',
                                 fontWeight: FontWeight.w500),
                           ),

@@ -2,6 +2,7 @@ import 'package:asteroids_nasa/config/theme/app_theme.dart';
 import 'package:asteroids_nasa/presentation/providers/firebase_provider.dart';
 import 'package:asteroids_nasa/presentation/providers/methods_provider.dart';
 import 'package:asteroids_nasa/presentation/screens/home/home.dart';
+import 'package:asteroids_nasa/presentation/screens/profile/profile_info.dart';
 import 'package:asteroids_nasa/presentation/screens/sing_in/authentication.dart';
 import 'package:asteroids_nasa/presentation/screens/sing_in/email_sign_in.dart';
 import 'package:asteroids_nasa/presentation/screens/sing_in/otp_verification.dart';
@@ -33,9 +34,11 @@ class MyApp extends StatelessWidget {
       routes: {
         Home.routeName: (BuildContext context) => const Home(),
         Authentication.routeName: (context) => const Authentication(),
+        Welcome.routeName: (context) => const Welcome(),
         EmailSignIn.routeName: (BuildContext context) => const EmailSignIn(),
         Register.routeName: (BuildContext context) => const Register(),
         OtpVerification.routeName: (BuildContext context) => const OtpVerification(),
+        ProfileInfo.routeName: (BuildContext context) => const ProfileInfo(),
       },
     );
   }

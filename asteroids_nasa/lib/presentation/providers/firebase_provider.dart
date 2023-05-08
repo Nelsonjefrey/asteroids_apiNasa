@@ -1,5 +1,7 @@
-// ignore_for_file: use_build_context_synchronously
-
+// ignore_for_file: use_build_context_synchronously, non_constant_identifier_names
+import 'dart:convert';
+import 'dart:io';
+import 'package:asteroids_nasa/models/asteroids.dart';
 import 'package:asteroids_nasa/models/user.dart';
 import 'package:asteroids_nasa/presentation/providers/methods_provider.dart';
 import 'package:asteroids_nasa/presentation/screens/home/home.dart';
@@ -10,8 +12,10 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:asteroids_nasa/utils/utils.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -20,13 +24,18 @@ class FirebaseProvider extends ChangeNotifier {
   late FirebaseApp app;
   late FirebaseAuth auth;
   late FirebaseFirestore db;
+  late FirebaseStorage storage;
   late SharedPreferences shared;
   late AppUser? user;
+  Map<String, dynamic> misAsteroids = {};
+  Map<String, dynamic> generalData = {};
+  List<String> keys = [];
 
   bool codeSent = false;
   String? verificationId;
   String currentRoute = "";
   String? auxUid;
+  int element_count = 0;
   int contador = 0;
 
   Map<String, dynamic>? tempDriverInfo;
@@ -36,11 +45,49 @@ class FirebaseProvider extends ChangeNotifier {
       app = await Firebase.initializeApp();
       auth = FirebaseAuth.instance;
       db = FirebaseFirestore.instance;
+      storage = FirebaseStorage.instance;
       shared = await SharedPreferences.getInstance();
     } catch (e) {
       debugPrint('ERROR initializeFirebaseAoo: $e');
     }
   }
+
+  Future<void> initAsteroisd() async {
+    try {
+      QuerySnapshot querySnapshot = await db
+          .collection('users')
+          .doc(user!.uid)
+          .collection('myasteroids')
+          .get();
+      for (var element in querySnapshot.docs) {
+        Map<String, dynamic> asteroidsData =
+            element.data() as Map<String, dynamic>;
+
+        Asteroids asteroids = Asteroids(
+            links: asteroidsData['links'],
+            elementCount: asteroidsData['elementCount'],
+            nearEarthObjects: asteroidsData['nearEarthObjects']);
+
+        // misAsteroids.add(ate);
+      }
+      if (misAsteroids.isEmpty) {
+        String start_date = '2023-05-04';
+        String end_date = '2023-05-11';
+        http.Response response = await http.get(Uri.parse(
+            'https://api.nasa.gov/neo/rest/v1/feed?start_date=$start_date&end_date=$end_date&api_key=iyRysA4eSMbC8ufifITF4Nwm1zwyAh6fygk9exIR'));
+        Map<String, dynamic> jsonData =
+            json.decode(response.body) as Map<String, dynamic>;
+        generalData = jsonData;
+        Map<String, dynamic> misAsteroid = jsonData['near_earth_objects'];
+        keys = misAsteroid.keys.toList();
+        misAsteroids = misAsteroid;
+      }
+      notifyListeners();
+    } catch (e) {
+      debugPrint('Error initAsteroisd: $e');
+    }
+  }
+  
 
   Future<void> sendCodeVerification(
     BuildContext context,
@@ -48,10 +95,7 @@ class FirebaseProvider extends ChangeNotifier {
     String phoneNumber,
     String from,
   ) async {
-    
     try {
-      print(phoneNumber);
-      print(from);
       methods.showLoadingDialog(context);
       await auth.verifyPhoneNumber(
         timeout: const Duration(seconds: 60),
@@ -162,7 +206,31 @@ class FirebaseProvider extends ChangeNotifier {
           message: 'Intenta nuevamente');
     }
   }
-
+// Load profile photo to db
+  Future<void> loadProfilePhoto(File profilePhoto) async {
+    try {
+      String? photoUrl;
+      String photoName;
+      photoName = 'Profile.jpg';
+      Reference storageReference;
+      storageReference =
+          storage.ref().child('users/' + user!.uid + '/profile/' + photoName);
+      UploadTask uploadTask = storageReference.putFile(profilePhoto);
+      String url;
+      await uploadTask.then((task) async {
+        url = await task.ref.getDownloadURL();
+        photoUrl = url;
+      });
+      await db
+          .collection('users')
+          .doc(user!.uid)
+          .update({'profile_info.photo_url': photoUrl});
+      user!.profileInfo['photo_url'] = photoUrl;
+      notifyListeners();
+    } catch (e) {
+      debugPrint('ERROR loadProfilePhoto: $e');
+    }
+  }
   // Future<String> phoneSignIn(
   //     BuildContext context, PhoneAuthCredential credential) async {
   //   try {
@@ -267,6 +335,23 @@ class FirebaseProvider extends ChangeNotifier {
     }
   }
 
+  Future<String> updateUserProfileInfo(Map<String, dynamic> userData) async {
+    try {
+      await db.collection('users').doc(user!.uid).update({
+        'profile_info.names': userData['names'],
+        'profile_info.last_names': userData['last_names'],
+        'profile_info.emg_phone': userData['emg_phone']
+      });
+      user!.profileInfo['names'] = userData['names'];
+      user!.profileInfo['last_names'] = userData['last_names'];
+      user!.profileInfo['emg_phone'] = userData['emg_phone'];
+      notifyListeners();
+      return 'success';
+    } catch (e) {
+      debugPrint('ERROR updateUserProfileInfo: $e');
+      return 'error';
+    }
+  }
   // Verify if sent code is correct
   Future<String> verifySentCode(BuildContext context, String verificationId,
       String code, String phoneNumber, String type) async {
@@ -379,18 +464,10 @@ class FirebaseProvider extends ChangeNotifier {
         Map<String, dynamic>? userData =
             documentSnapshot.data() as Map<String, dynamic>?;
         if (userData != null) {
-          // user = AppUser(
-          //     uid: userCredential.user!.uid,
-          //     notificationId: userData['notification_id'],
-          //     profileInfo: userData['profile_info'],
-          //     saveAddresses: userData['save_addresses'],
-          //     agreement: userData['agreement'],
-          //     wallet: userData['wallet'].toDouble(),
-          //     user_fmasivo: userData['user_fmasivo'],
-          //     enable: userData['enable']);
-          // if (user!.notificationId == '') {
-          //   updateUserNotificationId(false);
-          // }
+          user = AppUser(
+              uid: userCredential.user!.uid,              
+              profileInfo: userData['profile_info'],              
+              enable: userData['enable']);
           return 'userData';
         } else {
           DocumentSnapshot driverSnapshot = await db
@@ -499,9 +576,9 @@ class FirebaseProvider extends ChangeNotifier {
       notifyListeners();
       if (userData != null) {
         user = AppUser(
-            uid: userCred.user!.uid,            
+            uid: userCred.user!.uid,
             profileInfo: userData['profile_info'],
-            enable: userData['enable']);        
+            enable: userData['enable']);
         return 'userData';
       } else {
         DocumentSnapshot driverSnapshot =
@@ -630,8 +707,8 @@ class FirebaseProvider extends ChangeNotifier {
 
   // Log out user session
   Future<String> logOut() async {
-    try {      
-      await auth.signOut();      
+    try {
+      await auth.signOut();
       return 'success';
     } catch (e) {
       debugPrint('ERROR logOut: $e');

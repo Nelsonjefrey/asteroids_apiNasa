@@ -1,3 +1,5 @@
+// ignore_for_file: sort_child_properties_last
+
 import 'package:asteroids_nasa/presentation/providers/methods_provider.dart';
 import 'package:asteroids_nasa/utils/utils.dart';
 import 'package:flutter/material.dart';
@@ -37,21 +39,12 @@ class _HeaderState extends State<Header> {
         mainAxisAlignment: MainAxisAlignment.center,
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          Image.network(
-            'https://w1.pngwing.com/pngs/954/432/png-transparent-pdf-logo-nasa-insignia-outer-space-nasa-tv-television-blue-line-circle.png',
-            color: Colors.white,
-          ),
-          SizedBox(
-            width: utils.screenWidth * 0.03,
-          ),
-          Image.network(
-            'https://e7.pngegg.com/pngimages/830/737/png-clipart-logo-space-race-nasa-insignia-united-states-nasa-miscellaneous-logo.png',
-            color: Colors.white,
-            width: utils.screenWidth * 0.35,
-          ),
+          const Text('ASTEROIDS', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 20)),
+          SizedBox(width: utils.screenWidth *0.02,),
+          Image.network('https://api.nasa.gov/assets/img/favicons/favicon-192.png'),
         ],
       ),
-      decoration: BoxDecoration(color: utils.primaryColor),
+      decoration: const BoxDecoration(color: Colors.black),
     );
   }
 }
