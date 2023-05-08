@@ -1,16 +1,30 @@
-# asteroids_nasa
+# ASTEROIDS
+## API = [API_NASA](https://api.nasa.gov/) <img class="usa-logo-img" src="https://api.nasa.gov/assets/img/favicons/favicon-192.png" width=30px> 
 
-A new Flutter project.
+<table>
+    <tr>
+        <td><img src='https://i.postimg.cc/FzFCmJNf/Screenshot-1.png' border='0' alt='Screenshot-1'/></td>
+        <td><img src='https://i.postimg.cc/zBrPtcQF/Screenshot-2.png' border='0' alt='Screenshot-2'/></td>
+        <td><img src='https://i.postimg.cc/3wpcZTtw/Screenshot-5.png' border='0' alt='Screenshot-5'/></td>
+    </tr>
+</table>
 
-## Getting Started
+## 📜 Resumen 📜
+Aplicacion movíl Desarrollada en Flutter, Dart consume la api de la nasa el enpoint (Asteroids - NeoWs) y tiene integrado la authenticacion de firebase para la gestion y el manejo de los usuarios.
 
-This project is a starting point for a Flutter application.
+## 👨‍💻 Tecnologías usadas 👨‍💻
 
-A few resources to get you started if this is your first Flutter project:
-
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
-
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+<table>
+    <thead>
+        <tr>
+            <th> DART + FLUTTER</th>            
+            <th> FIREBASE </th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>            
+            <td><img src="https://terminalroot.com/assets/img/dart/flutter-dart.jpg" alt="Logo flutter"></td>
+            <td><img src="https://admin.johnserrano.co/content/images/2021/01/Firebase.jpg" alt="Logo flutter"></td>            
+        </tr>
+    </tbody>
+</table>
